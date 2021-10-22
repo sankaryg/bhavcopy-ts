@@ -4,8 +4,6 @@ import sourceMaps from 'rollup-plugin-sourcemaps'
 import camelCase from 'lodash.camelcase'
 import typescript from 'rollup-plugin-typescript2'
 import json from 'rollup-plugin-json'
-import * as request from 'request';
-import * as fs from 'fs';
 
 const pkg = require('./package.json')
 
@@ -19,8 +17,10 @@ export default {
   ],
   // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash')
   external: [
-    request,
-    fs
+    'request',
+    'fs',
+    '@types/unzipper',
+    '@types/csvtojson'
   ],
   watch: {
     include: 'src/**',

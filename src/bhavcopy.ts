@@ -1,13 +1,15 @@
-import * as request from 'request'
-import * as fs from 'fs'
+import request from 'request'
+import fs from 'fs'
+import { Extract } from 'unzipper'
+import csv from 'csvtojson/v2'
 
 export default class BhavCopy {
   customDir: any
   fileType: any
   isMultiplesFile: boolean
   baseDir: string | undefined
-  request: request.RequestAPI<request.Request, request.CoreOptions, request.RequiredUriUrl>
-  fs: typeof fs
+  // request: request.RequestAPI<request.Request, request.CoreOptions, request.RequiredUriUrl>
+  // fs: typeof fs
   /**
    * Construct a new nse-bhavcopy client
    *
@@ -15,8 +17,8 @@ export default class BhavCopy {
    * @param string dir      Specify the directory for downloading files
    */
   constructor(options: any = {}) {
-    this.request = request
-    this.fs = fs
+    // this.request = request
+    // this.fs = fs
     const { dir, type } = options
     this.customDir = dir && dir !== undefined && dir !== 'undefined' ? dir : ''
     this.fileType =
@@ -136,8 +138,8 @@ export default class BhavCopy {
     while (i < partsLength) {
       if (parts[i]) {
         path = path + parts[i]
-        if (!this.fs.existsSync(path)) {
-          this.fs.mkdirSync(path)
+        if (!fs.existsSync(path)) {
+          fs.mkdirSync(path)
         }
       }
       path = path + '/'
@@ -203,9 +205,9 @@ export default class BhavCopy {
                   .replace('cm', '')
                   .replace('bhav', '')
                 if (response.statusCode === 200) {
-                  const unzip = require('unzipper')
+                  //const unzip = require('unzipper')
                   if (this.fileType === 'csv') {
-                    streamObj.pipe(unzip.Extract({ path: this.baseDir }))
+                    streamObj.pipe(Extract({ path: this.baseDir }))
 
                     return resolve({
                       message:
@@ -215,24 +217,24 @@ export default class BhavCopy {
                     })
                   } else if (this.fileType === 'json') {
                     streamObj
-                      .pipe(unzip.Extract({ path: this.baseDir }))
+                      .pipe(Extract({ path: this.baseDir }))
                       .on('error', () => {
                         return reject('Error in bhavcopy download.')
                       })
                       .on('close', async () => {
                         try {
-                          const csv = require('csvtojson/v2')
+                          //const csv = require('csvtojson/v2')
                           const csvPath =
                             './' + this.baseDir + '/' + originalFileName!.replace('.zip', '')
                           const jsonArray = await csv().fromFile(csvPath)
-                          this.fs.unlinkSync(csvPath)
+                          fs.unlinkSync(csvPath)
                           return resolve(jsonArray)
                         } catch (err) {
                           return reject(err)
                         }
                       })
                   } else if (this.fileType === 'zip') {
-                    streamObj.pipe(this.fs.createWriteStream(this.baseDir + '/' + originalFileName))
+                    streamObj.pipe(fs.createWriteStream(this.baseDir + '/' + originalFileName))
                     return resolve({
                       message:
                         originalFileName +
@@ -280,7 +282,7 @@ export default class BhavCopy {
     }
     return new Promise((resolve, reject) => {
       try {
-        const requestStream = this.request(reqOpts)
+        const requestStream = request(reqOpts)
         return resolve(requestStream)
       } catch (err) {
         return reject(err)
